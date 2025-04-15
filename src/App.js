@@ -1,6 +1,7 @@
 import './App.css';
 import CounterWithReducer from './components/CounterWithReducer';
 import CounterWithState from './components/CounterWithState';
+import ToDoList from './components/ToDoList';
 
 function App() {
 
@@ -9,6 +10,8 @@ function App() {
       {/* <CounterWithState /> */}
       {/* Below component is with local storage */}
       {/* <CounterWithReducer/> */}
+
+      <ToDoList/>
     </div>
   );
 }
