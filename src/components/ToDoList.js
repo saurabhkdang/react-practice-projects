@@ -12,6 +12,8 @@ const ToDoList = () => {
         const storedTasks = localStorage.getItem("tasks");
         return storedTasks ? JSON.parse(storedTasks) : [];
     });
+    const [editId, setEditId] = useState("");
+    const [filterType, setFilterType] = useState("all");
     const [title, setTitle] = useState(""); 
 
 
@@ -21,8 +23,21 @@ const ToDoList = () => {
 
     const addTask = () => {
         if (title.trim() === "") return;
+
+        if(editId==="")
         setTasks([...tasks, {id: uuidv4(), title, completed:false}])
+        else{
+            const updatedTasks = tasks.map((task) => {
+                if(task.id === editId) {
+                    return {...task, title: title};
+                }
+                return task;
+            })
+            setTasks(updatedTasks)
+        }
+        
         setTitle('')
+        setEditId('')
     }
 
     const markTask = (id) => {
@@ -36,25 +51,63 @@ const ToDoList = () => {
         setTasks(updatedTasks)
     }
 
+    const filter = (type) => {
+        setFilterType(type);
+    };
+
+    const getFilteredTasks = () => {
+        switch (filterType) {
+            case "completed":
+                return tasks.filter(task => task.completed);
+            case "pending":
+                return tasks.filter(task => !task.completed);
+            default:
+                return tasks;
+        }
+    }
+
+    const editTask = (task_id) => {
+        setEditId(task_id)
+        const editTask = tasks.filter((task) => task.id === task_id)
+        setTitle(editTask[0].title);
+    }
+
+    const filteredTasks = getFilteredTasks()
+
     return (
         
         <>
             <div className='row'>
+                <div className="btn-group" role="group" aria-label="Basic radio toggle button group">
+                    <input type="radio" className="btn-check" name="btnradio" id="btnradio1" onChange={()=>filter('all')} autoComplete="off" checked={filterType==="all"} />
+                    <label className="btn btn-outline-primary" htmlFor="btnradio1">All</label>
+
+                    <input type="radio" className="btn-check" name="btnradio" id="btnradio2" onChange={()=>filter('completed')} autoComplete="off" checked={filterType==="completed"}/>
+                    <label className="btn btn-outline-primary" htmlFor="btnradio2">Completed</label>
+
+                    <input type="radio" className="btn-check" name="btnradio" id="btnradio3" onChange={()=>filter('pending')} autoComplete="off" checked={filterType==="pending"}/>
+                    <label className="btn btn-outline-primary" htmlFor="btnradio3">Pending</label>
+                </div>
                 <ul className="list-group">
                     {
-                        tasks.length >0 ? tasks.map((task, index) => (
-                            <li key={task.id} className={`list-group-item`}>
-                                <input 
-                                className="form-check-input me-1" 
-                                type="checkbox" 
-                                onChange={() => markTask(task.id)} 
-                                checked={task.completed} 
-                                id={`task-${index}`}></input>
-                                <label 
-                                className="form-check-label" 
-                                htmlFor={`task-${index}`}
-                                style={task.completed?completedStyle:{}}
-                                >{task.title}</label>
+                        filteredTasks.length >0 ? filteredTasks.map((task, index) => (
+                            <li key={task.id} className={`list-group-item d-flex justify-content-between align-items-start`}>
+                                <div className='ms-2 me-auto'>
+                                    <input 
+                                    className="form-check-input me-1" 
+                                    type="checkbox" 
+                                    onChange={() => markTask(task.id)} 
+                                    checked={task.completed} 
+                                    id={`task-${index}`}></input>
+                                    <label 
+                                    className="form-check-label" 
+                                    htmlFor={`task-${index}`}
+                                    style={task.completed?completedStyle:{}}
+                                    >{task.title}</label>
+                                </div>
+                                <span className="badge text-bg-primary rounded-pill" onClick={()=>editTask(task.id)}>
+                                    <i className="fa-solid fa-pen"></i> 
+                                </span>
                             </li>
                         )) : <li className="list-group-item">No Tasks</li>
                     }
@@ -75,7 +128,7 @@ const ToDoList = () => {
                     />
                 </div>
                 <div className="col-12">
-                    <button type="button" className="btn btn-primary" onClick={() => addTask()}>Add</button>
+                    <button type="button" className="btn btn-primary" onClick={() => addTask()}>{ editId!==""?"Edit":"Add" }</button>
                 </div>
             </form>
         </>
