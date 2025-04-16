@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { v4 as uuidv4} from 'uuid'
 
 const completedStyle = {
@@ -8,6 +8,7 @@ const completedStyle = {
 
 const ToDoList = () => {
 
+    const inputRef = useRef();
     const [tasks, setTasks] = useState(() => {
         const storedTasks = localStorage.getItem("tasks");
         return storedTasks ? JSON.parse(storedTasks) : [];
@@ -16,25 +17,32 @@ const ToDoList = () => {
     const [filterType, setFilterType] = useState("all");
     const [title, setTitle] = useState(""); 
 
+    useEffect(() => {
+        inputRef.current?.focus();
+    }, [editId]);
 
     useEffect(() => {
         localStorage.setItem("tasks", JSON.stringify(tasks))
     }, [tasks])
 
+    const handleAdd = () => {
+        setTasks(prev => [...prev, { id: uuidv4(), title, completed: false }]);
+    };
+    
+    const handleEdit = () => {
+        const updatedTasks = tasks.map((task) =>
+            task.id === editId ? { ...task, title } : task
+        );
+        setTasks(updatedTasks);
+    };
+
     const addTask = () => {
         if (title.trim() === "") return;
 
-        if(editId==="")
-        setTasks([...tasks, {id: uuidv4(), title, completed:false}])
-        else{
-            const updatedTasks = tasks.map((task) => {
-                if(task.id === editId) {
-                    return {...task, title: title};
-                }
-                return task;
-            })
-            setTasks(updatedTasks)
-        }
+        // setTasks([...tasks, {id: uuidv4(), title, completed:false}]) //below is the optimized version
+
+        if(editId==="") handleAdd()
+        else handleEdit()
         
         setTitle('')
         setEditId('')
@@ -72,6 +80,9 @@ const ToDoList = () => {
         setTitle(editTask[0].title);
     }
 
+    const handleFilterChange = (type) => () => setFilterType(type);
+
+
     const filteredTasks = getFilteredTasks()
 
     return (
@@ -98,15 +109,15 @@ const ToDoList = () => {
                                     type="checkbox" 
                                     onChange={() => markTask(task.id)} 
                                     checked={task.completed} 
-                                    id={`task-${index}`}></input>
+                                    id={`task-${task.id}`}></input>
                                     <label 
                                     className="form-check-label" 
-                                    htmlFor={`task-${index}`}
+                                    htmlFor={`task-${task.id}`}
                                     style={task.completed?completedStyle:{}}
                                     >{task.title}</label>
                                 </div>
                                 <span className="badge text-bg-primary rounded-pill" onClick={()=>editTask(task.id)}>
-                                    <i className="fa-solid fa-pen"></i> 
+                                    Edit
                                 </span>
                             </li>
                         )) : <li className="list-group-item">No Tasks</li>
@@ -125,6 +136,7 @@ const ToDoList = () => {
                     value={title}
                     onChange={(e) => setTitle(e.target.value) } 
                     placeholder="Task Title Here" 
+                    ref={inputRef}
                     />
                 </div>
                 <div className="col-12">
