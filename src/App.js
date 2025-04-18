@@ -4,6 +4,8 @@ import CounterWithState from './components/CounterWithState';
 import ToDoList from './components/ToDoList';
 import ColorChanger from './components/ColorChanger';
 import FormValidation from './components/FormValidation';
+import DigitalClock from './components/DigitalClock';
+import EmojiFinder from './components/EmojiFinder';
 
 function App() {
 
@@ -17,7 +19,11 @@ function App() {
 
       {/* <ColorChanger/> */}
 
-      <FormValidation/>
+      {/* <FormValidation/> */}
+
+      {/* <DigitalClock/> */}
+
+      <EmojiFinder/>
     </div>
   );
 }
